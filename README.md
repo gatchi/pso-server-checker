@@ -1,0 +1,1 @@
+# teth-server-checker-go
