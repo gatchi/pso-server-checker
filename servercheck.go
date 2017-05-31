@@ -46,7 +46,7 @@ func main() {
 
 	// Connect to patch server
 	conn, err := net.Dial("tcp", "127.0.0.1:11000")
-	if err != nil { 
+	if err != nil {
 		print("Can't connect to patch.")
 		log.Fatal(err)
 	} else {
