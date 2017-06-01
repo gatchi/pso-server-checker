@@ -52,17 +52,19 @@ func main() {
 	// Connect to patch server
 	conn, err := net.Dial("tcp", patch)
 	if err != nil {
-		print("Can't connect to patch.\n")
+		println("Can't connect to patch.")
 		log.Fatal(err)
 	} else {
-		print("Connected to patch.\n")
+		println("Connected to patch.")
 		buf := make([]byte, 4096)
 		for {
-			_, err := conn.Read(buf)
+			nbytes, err := conn.Read(buf)
 			if err != nil {
-				log.Printf("Server closed connection.\n")
+				log.Println("Server closed connection.")
+				log.Println(err)
 				break
 			}
+			log.Printf("%v bytes read.\n", nbytes)
 		}
 	}
 
