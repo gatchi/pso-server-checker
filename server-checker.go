@@ -25,11 +25,7 @@ func main() {
 	scan := bufio.NewScanner(file)
 	for i := 0; scan.Scan(); {
 		data = scan.Bytes()
-		if data == nil {
-			// Don't do anything
-		} else if err = scan.Err(); err != nil {
-			// Again, don't do anything
-		} else if data[0] != '#' {
+		if data[0] != '#' {
 			switch i {
 				case 0: botkey = scan.Text()
 						i++
