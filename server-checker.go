@@ -9,16 +9,18 @@ import (
 	"net"
 )
 
+var botkey string
+var chatid int64
+var patch string  // Addresses
+
 func main() {
 	// Read settings for bot
-	file, err := os.Open("servercheck.conf")
+	file, err := os.Open("server-checker.conf")
 	if err != nil {
 		log.Fatal(err)
 	}
 	data := make([]byte, 100)
 	scan := bufio.NewScanner(file)
-	var botkey string
-	var chatid int64
 	for i := 0; scan.Scan(); {
 		data = scan.Bytes()
 		if data == nil {
@@ -32,6 +34,9 @@ func main() {
 				case 1: str := scan.Text()
 						chatid, err = strconv.ParseInt(str, 10, 64)
 						if err != nil { log.Fatal(err) }
+						i++
+				case 2: patch = scan.Text()
+						i++
 			}
 		}
 	}
@@ -45,7 +50,7 @@ func main() {
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
 	// Connect to patch server
-	conn, err := net.Dial("tcp", "127.0.0.1:11000")
+	conn, err := net.Dial("tcp", patch)
 	if err != nil {
 		print("Can't connect to patch.\n")
 		log.Fatal(err)
