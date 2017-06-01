@@ -11,7 +11,7 @@ import (
 
 var botkey string
 var chatid int64
-var patch string  // Addresses
+var patch,login string  // Addresses
 
 func main() {
 	// Open configuration file
@@ -35,6 +35,8 @@ func main() {
 						i++
 				case 2: patch = scan.Text()
 						i++
+				case 3: login = scan.Text()
+						i++
 			}
 		}
 	}
@@ -49,27 +51,55 @@ func main() {
 	// Uncomment for program to display bot responses
 	//bot.Debug = true
 
-	// Connect to patch server
-	conn, err := net.Dial("tcp", patch)
+	pcon, err := net.Dial("tcp", patch)
 	if err != nil {
 		println("Can't connect to patch.")
 		log.Fatal(err)
 	} else {
 		println("Connected to patch.")
-		buf := make([]byte, 4096)
-		for {
-			nbytes, err := conn.Read(buf)
-			if err != nil {
-				log.Println("Server closed connection.")
-				log.Println(err)
-				break
-			}
-			log.Printf("%v bytes read.\n", nbytes)
-		}
+	}
+	lcon, err := net.Dial("tcp", login)
+	if err != nil {
+		println("Can't connect to login.")
+		log.Fatal(err)
+	} else {
+		println("Connected to login.")
 	}
 
-	// Send message
-	msg := tgbotapi.NewMessage(chatid, "patch server down")
-	bot.Send(msg)
+	// Take turns reading from each connection
+	pch := make(chan int)
+	lch := make(chan int)
+	go check(pch, pcon, "Patch")
+	go check(lch, lcon, "Login")
+	sc := 2  // Server counter
+	for {
+		select {
+			case <-pch: msg := tgbotapi.NewMessage(chatid, "patch server down")
+						bot.Send(msg)
+						sc--
+			case <-lch: msg := tgbotapi.NewMessage(chatid, "login server down")
+						bot.Send(msg)
+						sc--
+		}
+		if sc == 0 {
+			println("No more active servers.")
+			break
+		}
+	}
+}
+
+func check(ch chan int, conn net.Conn, name string) {
+	buff := make([]byte, 400)
+	for {
+		nbytes, err := conn.Read(buff)
+		if err != nil {
+			log.Printf("%v server closed the connection.", name)
+			//log.Println(err)
+			ch <- 1
+			break
+		}
+		log.Printf("%v bytes read from %v server.\n", nbytes, name)
+	}
+	return
 }
 
