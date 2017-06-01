@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"bufio"
 	"os"
@@ -51,26 +52,17 @@ func main() {
 	// Uncomment for program to display bot responses
 	//bot.Debug = true
 
-	pcon, err := net.Dial("tcp", patch)
-	if err != nil {
-		println("Can't connect to patch.")
-		log.Fatal(err)
-	} else {
-		println("Connected to patch.")
-	}
-	lcon, err := net.Dial("tcp", login)
-	if err != nil {
-		println("Can't connect to login.")
-		log.Fatal(err)
-	} else {
-		println("Connected to login.")
-	}
+	// Connect to the servers
+	pcon := dock(patch, "patch")
+	lcon := dock(login, "login")
 
 	// Take turns reading from each connection
 	pch := make(chan int)
 	lch := make(chan int)
+	sch := make(chan int)
 	go check(pch, pcon, "Patch")
 	go check(lch, lcon, "Login")
+	//go check(sch, scon, "Ship")
 	sc := 2  // Server counter
 	for {
 		select {
@@ -78,6 +70,9 @@ func main() {
 						bot.Send(msg)
 						sc--
 			case <-lch: msg := tgbotapi.NewMessage(chatid, "login server down")
+						bot.Send(msg)
+						sc--
+			case <-sch: msg := tgbotapi.NewMessage(chatid, "ship down")
 						bot.Send(msg)
 						sc--
 		}
@@ -103,3 +98,13 @@ func check(ch chan int, conn net.Conn, name string) {
 	return
 }
 
+func dock(addr, name string) net.Conn {
+	conn, err := net.Dial("tcp", addr)
+	if err != nil {
+		fmt.Printf("Can't connect to %v.\n", name)
+		log.Fatal(err)
+	} else {
+		fmt.Printf("Connected to %v.\n", name)
+	}
+	return conn
+}
