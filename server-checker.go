@@ -14,11 +14,13 @@ var chatid int64
 var patch string  // Addresses
 
 func main() {
-	// Read settings for bot
+	// Open configuration file
 	file, err := os.Open("server-checker.conf")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	// Read settings
 	data := make([]byte, 100)
 	scan := bufio.NewScanner(file)
 	for i := 0; scan.Scan(); {
