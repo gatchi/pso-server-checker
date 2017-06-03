@@ -12,7 +12,7 @@ import (
 
 var botkey string
 var chatid int64
-var patch,login string  // Addresses
+var patch,login,ship string  // Addresses
 
 func main() {
 	// Open configuration file
@@ -38,6 +38,8 @@ func main() {
 						i++
 				case 3: login = scan.Text()
 						i++
+				case 4: ship = scan.Text()
+						i++
 			}
 		}
 	}
@@ -55,6 +57,7 @@ func main() {
 	// Connect to the servers
 	pcon := dock(patch, "patch")
 	lcon := dock(login, "login")
+	scon := dock(ship, "ship")
 
 	// Take turns reading from each connection
 	pch := make(chan int)
@@ -62,8 +65,9 @@ func main() {
 	sch := make(chan int)
 	go check(pch, pcon, "Patch")
 	go check(lch, lcon, "Login")
+	go check(sch, scon, "Ship")
 	//go check(sch, scon, "Ship")
-	sc := 2  // Server counter
+	sc := 3  // Server counter
 	for {
 		select {
 			case <-pch: msg := tgbotapi.NewMessage(chatid, "patch server down")
@@ -72,7 +76,7 @@ func main() {
 			case <-lch: msg := tgbotapi.NewMessage(chatid, "login server down")
 						bot.Send(msg)
 						sc--
-			case <-sch: msg := tgbotapi.NewMessage(chatid, "ship down")
+			case <-sch: msg := tgbotapi.NewMessage(chatid, "ship disconnect")
 						bot.Send(msg)
 						sc--
 		}
@@ -83,6 +87,7 @@ func main() {
 	}
 }
 
+// Checks to see if still connected by trying to read
 func check(ch chan int, conn net.Conn, name string) {
 	buff := make([]byte, 400)
 	for {
@@ -94,6 +99,10 @@ func check(ch chan int, conn net.Conn, name string) {
 			break
 		}
 		log.Printf("%v bytes read from %v server.\n", nbytes, name)
+		/*for i := 0; i < nbytes; i++ {
+			fmt.Printf("%X ", buff[i])
+		}*/
+		println()
 	}
 	return
 }
@@ -102,9 +111,9 @@ func dock(addr, name string) net.Conn {
 	conn, err := net.Dial("tcp", addr)
 	if err != nil {
 		fmt.Printf("Can't connect to %v.\n", name)
-		log.Fatal(err)
+		os.Exit(1)
 	} else {
-		fmt.Printf("Connected to %v.\n", name)
+		log.Printf("Connected to %v.\n", name)
 	}
 	return conn
 }
