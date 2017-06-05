@@ -10,9 +10,20 @@ import (
 	"net"
 )
 
-var botkey string
-var chatid int64
-var patch,login,ship string  // Addresses
+var (
+	botkey string
+	chatid int64
+	addrs = map[string]string {
+		"patch": "127.0.0.1",
+		"login": "127.0.0.1",
+		"ship":  "127.0.0.1",
+	}
+	ports = map[string]string {
+		"patch": "11000",
+		"login": "12000",
+		"ship":  "5278",
+	}
+)
 
 func main() {
 	// Open configuration file
@@ -24,7 +35,8 @@ func main() {
 	// Read settings
 	data := make([]byte, 100)
 	scan := bufio.NewScanner(file)
-	for i := 0; scan.Scan(); {
+	var i int
+	for i = 0; scan.Scan(); {
 		data = scan.Bytes()
 		if data[0] != '#' {
 			switch i {
@@ -34,14 +46,24 @@ func main() {
 						chatid, err = strconv.ParseInt(str, 10, 64)
 						if err != nil { log.Fatal(err) }
 						i++
-				case 2: patch = scan.Text()
+				case 2: addrs["patch"] = scan.Text()
 						i++
-				case 3: login = scan.Text()
+				case 3: ports["patch"] = scan.Text()
 						i++
-				case 4: ship = scan.Text()
+				case 4: addrs["login"] = scan.Text()
+						i++
+				case 5: ports["login"] = scan.Text()
+						i++
+				case 6: addrs["ship"] = scan.Text()
+						i++
+				case 7: ports["ship"] = scan.Text()
 						i++
 			}
 		}
+	}
+	if i < 7 {
+		println("Config file missing fields.")
+		println("Filling with defaults.")
 	}
 
 	// Setup bot
@@ -55,9 +77,9 @@ func main() {
 	//bot.Debug = true
 
 	// Connect to the servers
-	pcon := connect(patch, "patch")
-	lcon := connect(login, "login")
-	scon := connect(ship, "ship")
+	pcon := connect("patch")
+	lcon := connect("login")
+	scon := connect("ship")
 
 	// Take turns reading from each connection
 	pch := make(chan int)
@@ -103,8 +125,8 @@ func read(ch chan int, conn net.Conn, name string) {
 	return
 }
 
-func connect(addr, name string) net.Conn {
-	conn, err := net.Dial("tcp", addr)
+func connect(name string) net.Conn {
+	conn, err := net.Dial("tcp", addrs[name] + ":" + ports[name])
 	if err != nil {
 		fmt.Printf("Can't connect to %v.\n", name)
 		os.Exit(1)
