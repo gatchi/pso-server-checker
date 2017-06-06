@@ -6,7 +6,7 @@ Roadmap
 -------
 1. ~~Patch server~~ ✔️
 2. ~~Login server~~ ✔️
-3. **Ship server**
+3. ~~Ship server~~ ✔️
 
 Requirements
 ------------
@@ -25,8 +25,18 @@ This file must be in the same directory as the binary.
 bot key
 # Message ID
 message id
-# Patch server (whatever its bound to; this may not be localhost!)
-127.0.0.1:11000
+# Patch server address
+127.0.0.1
+# Patch port
+11000
+# Login server
+127.0.0.1
+# Login port
+12000
+# Ship server
+127.0.0.1
+# Ship port
+5278
 ```
 
 ### Windows
