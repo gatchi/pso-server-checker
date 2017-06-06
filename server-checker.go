@@ -1,13 +1,13 @@
 package main
 
 import (
-	"fmt"
-	"strconv"
 	"bufio"
-	"os"
-	"log"
+	"fmt"
 	"gopkg.in/telegram-bot-api.v4"
+	"log"
 	"net"
+	"os"
+	"strconv"
 )
 
 var (
@@ -78,8 +78,8 @@ func main() {
 	//bot.Debug = true
 
 	// Connect to the servers
-	pcon, _ := connect("patch")
-	lcon, _ := connect("login")
+	pcon := connect("patch")
+	lcon := connect("login")
 
 	// Monitor connections
 	ch := make(chan int)
@@ -99,6 +99,17 @@ func alert(name string) {
 	bot.Send(msg)
 }
 
+func connect(name string) net.Conn {
+	conn, err := net.Dial("tcp", addrs[name] + ":" + ports[name])
+	if err != nil {
+		fmt.Printf("Can't connect to %v.\n", name)
+		os.Exit(1)
+	} else {
+		log.Printf("Connected to %v.\n", name)
+	}
+	return conn
+}
+
 // Checks to see if still connected by trying to read
 func read(ch chan int, conn net.Conn, name string, code int) {
 	buff := make([]byte, 400)
@@ -113,15 +124,4 @@ func read(ch chan int, conn net.Conn, name string, code int) {
 		log.Printf("%v bytes read from %v server.\n", nbytes, name)
 	}
 	return
-}
-
-func connect(name string) net.Conn {
-	conn, err := net.Dial("tcp", addrs[name] + ":" + ports[name])
-	if err != nil {
-		fmt.Printf("Can't connect to %v.\n", name)
-		os.Exit(1)
-	} else {
-		log.Printf("Connected to %v.\n", name)
-	}
-	return conn
 }
