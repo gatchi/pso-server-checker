@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	crypto "github.com/dcrodman/bb_reverse_proxy/encryption"
 	"gopkg.in/telegram-bot-api.v4"
 	"log"
 	"net"
@@ -24,6 +25,8 @@ var (
 		"ship":  "5278",
 	}
 	bot *tgbotapi.BotAPI
+	cCrypt *crypto.PSOCrypt
+	sCrypt *crypto.PSOCrypt
 )
 
 func main() {
@@ -80,16 +83,19 @@ func main() {
 	// Connect to the servers
 	pcon := connect("patch")
 	lcon := connect("login")
+	scon := connect("ship")
 
 	// Monitor connections
 	ch := make(chan int)
 	go read(ch, pcon, "patch", 1)
 	go read(ch, lcon, "login", 2)
+	go read(ch, scon, "ship", 3)
 	for {
 		sig := <-ch
 		switch sig {
 			case 1: alert("patch")
 			case 2: alert("login")
+			case 3: alert("ship")
 		}
 	}
 }
@@ -110,18 +116,38 @@ func connect(name string) net.Conn {
 	return conn
 }
 
-// Checks to see if still connected by trying to read
 func read(ch chan int, conn net.Conn, name string, code int) {
 	buff := make([]byte, 400)
 	for {
 		nbytes, err := conn.Read(buff)
-		if err != nil {
-			log.Printf("%v server closed the connection.", name)
+		if err != nil { // If disconnected
+			log.Printf("Server (%v) closed the connection.", name)
 			//log.Println(err)
 			ch <- code
 			break
 		}
-		log.Printf("%v bytes read from %v server.\n", nbytes, name)
+
+		// Let's do stuff with it
+		if nbytes == 200 && name == "ship" { // 200 means its an auth packet
+			var sKey [48]byte
+			var cKey [48]byte
+			copy(sKey[:], buff[104:152])
+			copy(cKey[:], buff[152:200])
+			sCrypt = crypto.NewBBCrypt(sKey)
+			cCrypt = crypto.NewBBCrypt(cKey)
+		}
+		if nbytes == 8 { // This is a ping, return it
+			sCrypt.Decrypt(buff, 8)
+			cCrypt.Encrypt(buff, 8)
+			send(buff[:8], conn)
+		}
 	}
 	return
+}
+
+func send(packet []byte, conn net.Conn) {
+	_, err := conn.Write(packet)
+	if err != nil {
+		log.Println("Tried to send, but failed.")
+	}
 }
