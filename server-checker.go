@@ -23,6 +23,7 @@ var (
 		"login": "12000",
 		"ship":  "5278",
 	}
+	bot *tgbotapi.BotAPI
 )
 
 func main() {
@@ -67,57 +68,46 @@ func main() {
 	}
 
 	// Setup bot
-	bot, err := tgbotapi.NewBotAPI(botkey)
+	bot, err = tgbotapi.NewBotAPI(botkey)
 	if err != nil {
 		log.Panic(err)
 	}
 	log.Printf("Authorized on account %s", bot.Self.UserName)
 
-	// Uncomment for program to display bot responses
+	// Uncomment to display bot responses
 	//bot.Debug = true
 
 	// Connect to the servers
-	pcon := connect("patch")
-	lcon := connect("login")
-	scon := connect("ship")
+	pcon, _ := connect("patch")
+	lcon, _ := connect("login")
 
-	// Take turns reading from each connection
-	pch := make(chan int)
-	lch := make(chan int)
-	sch := make(chan int)
-	go read(pch, pcon, "Patch")
-	go read(lch, lcon, "Login")
-	go read(sch, scon, "Ship")
-	sc := 3  // Server counter
-
+	// Monitor connections
+	ch := make(chan int)
+	go read(ch, pcon, "patch", 1)
+	go read(ch, lcon, "login", 2)
 	for {
-		select {
-			case <-pch: msg := tgbotapi.NewMessage(chatid, "patch server down")
-						bot.Send(msg)
-						sc--
-			case <-lch: msg := tgbotapi.NewMessage(chatid, "login server down")
-						bot.Send(msg)
-						sc--
-			case <-sch: msg := tgbotapi.NewMessage(chatid, "ship disconnect")
-						bot.Send(msg)
-						sc--
-		}
-		if sc == 0 {
-			println("No more active servers.")
-			break
+		sig := <-ch
+		switch sig {
+			case 1: alert("patch")
+			case 2: alert("login")
 		}
 	}
 }
 
+func alert(name string) {
+	msg := tgbotapi.NewMessage(chatid, name + " server down")
+	bot.Send(msg)
+}
+
 // Checks to see if still connected by trying to read
-func read(ch chan int, conn net.Conn, name string) {
+func read(ch chan int, conn net.Conn, name string, code int) {
 	buff := make([]byte, 400)
 	for {
 		nbytes, err := conn.Read(buff)
 		if err != nil {
 			log.Printf("%v server closed the connection.", name)
 			//log.Println(err)
-			ch <- 1
+			ch <- code
 			break
 		}
 		log.Printf("%v bytes read from %v server.\n", nbytes, name)
