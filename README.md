@@ -1,12 +1,13 @@
 Tethealla Server Checker
 ========================
-Connects to Teth servers and notifies you via Telegram bot when one or more have gone offline.
+Connects to local PSOBB servers and notifies you via a Telegram bot when one or more have gone offline.
 
 Roadmap
 -------
 1. ~~Patch server~~ ✔️
 2. ~~Login server~~ ✔️
 3. ~~Ship server~~ ✔️
+4. Auto-reconnect
 
 Requirements
 ------------
@@ -15,32 +16,11 @@ Requirements
 
 Installation
 ------------
-All installations require making a "server-checker.conf" file.  A sample one is provided below.
-Lines that begin with a hash are not read by the program.
-This file must be in the same directory as the binary.
+Pull the repo using `git pull` or `go get github.com/gatchi/server-checker`.
+Then run `go build` in the top-level directory, and then optionally `go install`.
+Make sure to fill out the config file template and either keep it where it is or
+(preferably) move it to your local config folder (/usr/local/etc/psobb-server-checker/server-checker.conf).
 
-```
-# Sample configuration file. Substitute your own values for each line.
-# Bot key
-bot key
-# Message ID
-message id
-# Patch server address
-127.0.0.1
-# Patch port
-11000
-# Login server
-127.0.0.1
-# Login port
-12000
-# Ship server
-127.0.0.1
-# Ship port
-5278
-```
-
-### Windows
-Download the executable.
-
-### Linux (or building from source)
-Run `go build` in the top-level directory, and then optionally `go install`.
+If you use Windows (64-bit only) you can also optionally download the pre-compiled binary included in this repo
+instead of pulling the whole repo and installing golang.  I will try to keep it as up-to-date as the rest of
+the code.
