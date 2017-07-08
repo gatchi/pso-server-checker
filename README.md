@@ -13,6 +13,7 @@ Requirements
 ------------
   - Working Tethealla-based installation of PSOBB servers
   - golang (if building from source or installing on Linux)
+  - Telegram (telegram.org)
 
 Installation
 ------------
@@ -24,3 +25,9 @@ Make sure to fill out the config file template and either keep it where it is or
 If you use Windows (64-bit only) you can also optionally download the pre-compiled binary included in this repo
 instead of pulling the whole repo and installing golang.  I will try to keep it as up-to-date as the rest of
 the code.
+
+Configuration
+-------------
+You will need to have already configured a bot before running this program, as well as a message ID to send to.
+[Check out this walkthrough](https://www.forsomedefinition.com/automation/creating-telegram-bot-notifications/)
+for more info.
