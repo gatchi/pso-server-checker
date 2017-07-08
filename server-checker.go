@@ -49,7 +49,7 @@ var (
 
 func main() {
 	// Open configuration file
-	file, err := os.Open("/usr/local/etc/pso-server-checker/server-checker.conf")
+	file, err := os.Open("/usr/local/etc/psobb-server-checker/server-checker.conf")
 	if err != nil {
 		if os.IsNotExist(err) {
 			file, err = os.Open("server-checker.conf")
