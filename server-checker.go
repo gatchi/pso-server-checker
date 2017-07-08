@@ -63,23 +63,23 @@ func main() {
 		if data[0] != '#' {
 			switch i {
 				case 0: botkey = scan.Text()
-						i++
+				        i++
 				case 1: str := scan.Text()
-						chatid, err = strconv.ParseInt(str, 10, 64)
-						if err != nil { log.Fatal(err) }
-						i++
+				        chatid, err = strconv.ParseInt(str, 10, 64)
+				        if err != nil { log.Fatal(err) }
+				        i++
 				case 2: addrs["patch"] = scan.Text()
-						i++
+				        i++
 				case 3: ports["patch"] = scan.Text()
-						i++
+				        i++
 				case 4: addrs["login"] = scan.Text()
-						i++
+				        i++
 				case 5: ports["login"] = scan.Text()
-						i++
+				        i++
 				case 6: addrs["ship"] = scan.Text()
-						i++
+				        i++
 				case 7: ports["ship"] = scan.Text()
-						i++
+				        i++
 			}
 		}
 	}
