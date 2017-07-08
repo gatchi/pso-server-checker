@@ -4,9 +4,9 @@ Connects to local PSOBB servers and notifies you via a Telegram bot when one or 
 
 Roadmap
 -------
-1. ~~Patch server~~ ✔️
-2. ~~Login server~~ ✔️
-3. ~~Ship server~~ ✔️
+1. ~~Patch server~~
+2. ~~Login server~~
+3. ~~Ship server~~
 4. Auto-reconnect
 
 Requirements
