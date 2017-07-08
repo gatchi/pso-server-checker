@@ -49,9 +49,15 @@ var (
 
 func main() {
 	// Open configuration file
-	file, err := os.Open("server-checker.conf")
+	file, err := os.Open("/usr/local/etc/pso-server-checker/server-checker.conf")
 	if err != nil {
-		log.Fatal(err)
+		if os.IsNotExist(err) {
+			file, err = os.Open("server-checker.conf")
+			if err != nil {
+				fmt.Println("Could not open conf file: " + err.Error())
+				os.Exit(1)
+			}
+		}
 	}
 
 	// Read settings
